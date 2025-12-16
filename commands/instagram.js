@@ -3,7 +3,8 @@ const axios = require('axios');
 
 const IG_USERNAME = 'infantryvokasi';
 const DISCORD_CHANNEL_ID = '1449389549842202778';
-let lastPostShortcode = ''; // Tempat menyimpan ID postingan terakhir
+const ROLE_ID = 'MASUKKAN_ID_ROLE_DISINI';
+let lastPostShortcode = ''; 
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -44,25 +45,20 @@ module.exports = {
                         .setTimestamp();
 
                     await targetChannel.send({
-                        content: `Halo Warga Infantry! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee cihuy\n\n🔗 ${postUrl}`,
+                        content: `Halo <@&${ROLE_ID}>! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee cihuy\n\n🔗 ${postUrl}`,
                         embeds: [embed]
                     });
 
-                    await interaction.editReply(`✅ Berhasil test! Notif dikirim ke <#${DISCORD_CHANNEL_ID}>`);
+                    await interaction.editReply(`✅ Berhasil! Tag dikirim ke <#${DISCORD_CHANNEL_ID}>`);
                 }
-            } else {
-                await interaction.editReply('❌ Tidak ada postingan ditemukan.');
             }
         } catch (error) {
-            console.error('RapidAPI Error:', error.message);
+            console.error('Error:', error.message);
             await interaction.editReply(`❌ Gagal: ${error.message}`);
         }
     },
 
     init: (client) => {
-        console.log(`📸 Monitor Instagram @${IG_USERNAME} aktif...`);
-        
-        // Fungsi untuk mengambil postingan terbaru tanpa mengirim notif (untuk inisialisasi)
         const fetchCurrentState = async () => {
             try {
                 const options = {
@@ -79,17 +75,14 @@ module.exports = {
                 const posts = response.data.result?.edges || [];
                 if (posts.length > 0) {
                     lastPostShortcode = posts[0].node.code;
-                    console.log(`✅ Postingan terakhir saat ini (${lastPostShortcode}) sudah dicatat. Bot stanby menunggu upload baru.`);
                 }
             } catch (err) {
-                console.error('⚠️ Gagal mengambil data awal IG:', err.message);
+                console.error('⚠️ Init error:', err.message);
             }
         };
 
-        // Ambil data postingan terakhir saat bot baru nyala
         fetchCurrentState();
 
-        // Cek berkala setiap 10 menit
         setInterval(async () => {
             try {
                 const options = {
@@ -110,9 +103,8 @@ module.exports = {
                     const latestPost = posts[0].node;
                     const shortcode = latestPost.code;
 
-                    // Bandingkan ID post: Jika beda dengan yang dicatat, berarti ada upload baru
                     if (shortcode !== lastPostShortcode && lastPostShortcode !== '') {
-                        lastPostShortcode = shortcode; // Update ID terakhir
+                        lastPostShortcode = shortcode;
                         
                         const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
                         if (channel) {
@@ -126,7 +118,8 @@ module.exports = {
                                 .setTimestamp();
 
                             await channel.send({
-                                content: `Halo Warga Infantry! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee cihuy\n\n🔗 ${postUrl}`,
+                                // MENTION ROLE DISINI JUGA
+                                content: `Halo <@&${ROLE_ID}>! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee cihuy\n\n🔗 ${postUrl}`,
                                 embeds: [embed]
                             });
                         }
@@ -135,6 +128,6 @@ module.exports = {
             } catch (err) {
                 console.error('⚠️ IG Monitor Error:', err.message);
             }
-        }, 60000);
+        }, 60000); 
     }
 };
