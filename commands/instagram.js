@@ -2,10 +2,13 @@ const {
     SlashCommandBuilder,
     MessageFlags
 } = require('discord.js');
-const ig = require('instagram-scraping');
+const {
+    InstagramScraper
+} = require('@aduptive/instagram-scraper');
 
+const scraper = new InstagramScraper();
 let lastPostShortcode = '';
-const IG_USERNAME = 'infantryvokasi'; // ig
+const IG_USERNAME = 'infantryvokasi';
 const DISCORD_CHANNEL_ID = '1449389549842202778';
 
 module.exports = {
@@ -19,44 +22,51 @@ module.exports = {
         });
 
         try {
-            const data = await ig.scrapeUserPage(IG_USERNAME);
-            const latestPost = data.medias ? data.medias[0] : null;
+            // Mengambil 1 postingan terakhir
+            const results = await scraper.getPosts(IG_USERNAME, 1);
 
-            if (latestPost) {
-                const caption = latestPost.text || "Update baru!";
-                await interaction.channel.send(`${caption} -${IG_USERNAME}\n🔗 https://www.instagram.com/p/${latestPost.shortcode}/`);
+            if (results.success && results.posts.length > 0) {
+                const latestPost = results.posts[0];
+                const caption = latestPost.caption || "Update baru!";
+                // URL Instagram menggunakan shortcode
+                const postUrl = `https://www.instagram.com/p/${latestPost.shortCode}/`;
 
+                await interaction.channel.send(`${caption} - @${IG_USERNAME}\n🔗 ${postUrl}`);
                 await interaction.editReply('✅ Notif test berhasil dikirim!');
             } else {
-                await interaction.editReply('❌ Tidak ada postingan ditemukan.');
+                await interaction.editReply(`❌ Gagal: ${results.error || 'Tidak ada postingan ditemukan.'}`);
             }
         } catch (err) {
             console.error('Test IG Error:', err.message);
-            if (interaction.deferred) {
-                await interaction.editReply(`❌ Gagal: ${err.message}`);
-            }
+            await interaction.editReply(`❌ Terjadi kesalahan: ${err.message}`);
         }
     },
 
     init: (client) => {
-        console.log(`📸 Monitor Instagram untuk @${IG_USERNAME} aktif...`);
+        console.log(`📸 Monitor Instagram (@${IG_USERNAME}) menggunakan @aduptive/instagram-scraper aktif...`);
+
         setInterval(async () => {
             try {
-                const data = await ig.scrapeUserPage(IG_USERNAME);
-                if (!data || !data.medias || data.medias.length === 0) return;
+                const results = await scraper.getPosts(IG_USERNAME, 1);
 
-                const latestPost = data.medias[0];
-                if (latestPost && latestPost.shortcode !== lastPostShortcode) {
-                    lastPostShortcode = latestPost.shortcode;
+                if (!results.success || results.posts.length === 0) return;
+
+                const latestPost = results.posts[0];
+
+                // Cek apakah postingan ini baru berdasarkan shortCode
+                if (latestPost.shortCode !== lastPostShortcode) {
+                    lastPostShortcode = latestPost.shortCode;
+
                     const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
                     if (channel) {
-                        const caption = latestPost.text || "Update baru!";
-                        await channel.send(`${caption} -${IG_USERNAME}\n🔗 https://www.instagram.com/p/${latestPost.shortcode}/`);
+                        const caption = latestPost.caption || "Update baru!";
+                        const postUrl = `https://www.instagram.com/p/${latestPost.shortCode}/`;
+                        await channel.send(`${caption} - @${IG_USERNAME}\n🔗 ${postUrl}`);
                     }
                 }
             } catch (err) {
                 console.error('⚠️ IG Monitor Error:', err.message);
             }
-        }, 300000); // 5 Menit
+        }, 300000); // Cek setiap 5 menit
     }
 };
