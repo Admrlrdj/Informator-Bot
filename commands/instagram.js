@@ -11,7 +11,7 @@ let lastPostShortcode = '';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('test-ig')
-        .setDescription('Cek postingan terakhir @infantryvokasi via instagram120 (Official Method)'),
+        .setDescription('Cek postingan terakhir @infantryvokasi via instagram120'),
 
     async execute(interaction) {
         await interaction.deferReply({
@@ -20,7 +20,7 @@ module.exports = {
 
         try {
             const options = {
-                method: 'POST', // Menggunakan POST sesuai snippet
+                method: 'POST',
                 url: 'https://instagram120.p.rapidapi.com/api/instagram/posts',
                 headers: {
                     'x-rapidapi-key': process.env.RAPIDAPI_KEY,
@@ -35,35 +35,35 @@ module.exports = {
 
             const response = await axios.request(options);
 
-            // Berdasarkan dokumentasi, data postingan biasanya ada di response.data.items atau response.data.data
-            const posts = response.data.items || response.data.data || response.data;
+            // PENYESUAIAN DISINI: Sesuai JSON anda, data ada di result.edges
+            const posts = response.data.result && response.data.result.edges ? response.data.result.edges : [];
 
-            if (posts && posts.length > 0) {
-                const latestPost = posts[0];
+            if (posts.length > 0) {
+                // node berisi data postingan
+                const latestPost = posts[0].node;
 
-                // Mengambil caption secara aman
-                let caption = "Update baru!";
-                if (latestPost.caption && latestPost.caption.text) {
-                    caption = latestPost.caption.text;
-                }
+                // Mengambil caption dari struktur node.caption.text
+                const caption = latestPost.caption && latestPost.caption.text ?
+                    latestPost.caption.text :
+                    "Update baru!";
 
-                // Link menggunakan 'code' atau 'shortcode'
-                const shortcode = latestPost.code || latestPost.shortcode;
+                // Mengambil shortcode/code
+                const shortcode = latestPost.code;
                 const postUrl = `https://www.instagram.com/p/${shortcode}/`;
 
-                await interaction.channel.send(`${caption} - @${IG_USERNAME}\n🔗 ${postUrl}`);
-                await interaction.editReply('✅ Berhasil menarik data terbaru via Official Method!');
+                await interaction.channel.send(`${caption}\n\n🔗 ${postUrl}`);
+                await interaction.editReply('✅ Berhasil mengambil data dari RapidAPI!');
             } else {
-                await interaction.editReply('❌ Tidak ada postingan ditemukan.');
+                await interaction.editReply('❌ Tidak ada postingan ditemukan dalam array result.edges.');
             }
         } catch (error) {
             console.error('RapidAPI Error:', error.message);
-            await interaction.editReply(`❌ Gagal: ${error.response?.data?.message || error.message}`);
+            await interaction.editReply(`❌ Gagal: ${error.message}`);
         }
     },
 
     init: (client) => {
-        console.log(`📸 Monitor Instagram (@${IG_USERNAME}) via instagram120 aktif...`);
+        console.log(`📸 Monitor Instagram via RapidAPI (instagram120) aktif...`);
         setInterval(async () => {
             try {
                 const options = {
@@ -81,18 +81,18 @@ module.exports = {
                 };
 
                 const response = await axios.request(options);
-                const posts = response.data.items || response.data.data || response.data;
+                const posts = response.data.result && response.data.result.edges ? response.data.result.edges : [];
 
-                if (posts && posts.length > 0) {
-                    const latestPost = posts[0];
-                    const shortcode = latestPost.code || latestPost.shortcode;
+                if (posts.length > 0) {
+                    const latestPost = posts[0].node;
+                    const shortcode = latestPost.code;
 
                     if (shortcode && shortcode !== lastPostShortcode) {
                         lastPostShortcode = shortcode;
                         const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
                         if (channel) {
                             const caption = latestPost.caption && latestPost.caption.text ? latestPost.caption.text : "Update baru!";
-                            await channel.send(`${caption} - @${IG_USERNAME}\n🔗 https://www.instagram.com/p/${shortcode}/`);
+                            await channel.send(`${caption}\n\n🔗 https://www.instagram.com/p/${shortcode}/`);
                         }
                     }
                 }
