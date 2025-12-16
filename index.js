@@ -9,9 +9,12 @@ const fs = require('fs');
 const path = require('path');
 
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds],
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+    ],
 });
-
 client.commands = new Collection();
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
@@ -49,6 +52,9 @@ client.on(Events.InteractionCreate, async interaction => {
         }
     }
 });
+
+const wordSensor = require('./word-sensor.js');
+client.on(wordSensor.name, (...args) => wordSensor.execute(...args));
 
 client.once(Events.ClientReady, async c => {
     console.log(`✅ Bot login sebagai ${c.user.tag}`);
