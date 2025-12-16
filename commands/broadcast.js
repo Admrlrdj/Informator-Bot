@@ -16,7 +16,6 @@ module.exports = {
             .setRequired(true)),
 
     async execute(interaction) {
-        // Cek izin Administrator
         if (!interaction.member.permissions.has('Administrator')) {
             return interaction.reply({
                 content: '❌ Kamu tidak punya izin untuk menggunakan command ini.',
@@ -27,7 +26,6 @@ module.exports = {
         const channelId = interaction.options.getString('channel_id');
         const message = interaction.options.getString('message');
 
-        // Mengambil username pengirim (hanya nama, tanpa tag angka jika memungkinkan)
         const sender = interaction.user.username;
 
         try {
@@ -39,8 +37,6 @@ module.exports = {
                 });
             }
 
-            // Tampilan baru: [Pesan] -[Nama]
-            // Contoh: test -radja
             await channel.send(`${message} -${sender}`);
 
             await interaction.reply({
