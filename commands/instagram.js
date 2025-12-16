@@ -1,6 +1,7 @@
 const {
     SlashCommandBuilder,
-    MessageFlags
+    MessageFlags,
+    EmbedBuilder
 } = require('discord.js');
 const axios = require('axios');
 
@@ -34,27 +35,30 @@ module.exports = {
             };
 
             const response = await axios.request(options);
-
-            // PENYESUAIAN DISINI: Sesuai JSON anda, data ada di result.edges
             const posts = response.data.result && response.data.result.edges ? response.data.result.edges : [];
 
             if (posts.length > 0) {
-                // node berisi data postingan
                 const latestPost = posts[0].node;
-
-                // Mengambil caption dari struktur node.caption.text
-                const caption = latestPost.caption && latestPost.caption.text ?
-                    latestPost.caption.text :
-                    "Update baru!";
-
-                // Mengambil shortcode/code
                 const shortcode = latestPost.code;
                 const postUrl = `https://www.instagram.com/p/${shortcode}/`;
 
-                await interaction.channel.send(`${caption}\n\n🔗 ${postUrl}`);
-                await interaction.editReply('✅ Berhasil mengambil data dari RapidAPI!');
+                // Ambil URL gambar pertama dari JSON (candidates[0])
+                const imageUrl = latestPost.image_versions2 ? .candidates ? . [0] ? .url;
+
+                const embed = new EmbedBuilder()
+                    .setColor('#E1306C')
+                    .setDescription(latestPost.caption ? .text || "No caption")
+                    .setImage(imageUrl) // Menampilkan gambar feed di embed
+                    .setTimestamp();
+
+                await interaction.channel.send({
+                    content: `Halo Warga Infantry! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee cihuy\n\n🔗 ${postUrl}`,
+                    embeds: [embed]
+                });
+
+                await interaction.editReply('✅ Notif test berhasil dikirim!');
             } else {
-                await interaction.editReply('❌ Tidak ada postingan ditemukan dalam array result.edges.');
+                await interaction.editReply('❌ Tidak ada postingan ditemukan.');
             }
         } catch (error) {
             console.error('RapidAPI Error:', error.message);
@@ -63,7 +67,7 @@ module.exports = {
     },
 
     init: (client) => {
-        console.log(`📸 Monitor Instagram via RapidAPI (instagram120) aktif...`);
+        console.log(`📸 Monitor Instagram (@${IG_USERNAME}) via RapidAPI aktif...`);
         setInterval(async () => {
             try {
                 const options = {
@@ -91,14 +95,25 @@ module.exports = {
                         lastPostShortcode = shortcode;
                         const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
                         if (channel) {
-                            const caption = latestPost.caption && latestPost.caption.text ? latestPost.caption.text : "Update baru!";
-                            await channel.send(`${caption}\n\n🔗 https://www.instagram.com/p/${shortcode}/`);
+                            const postUrl = `https://www.instagram.com/p/${shortcode}/`;
+                            const imageUrl = latestPost.image_versions2 ? .candidates ? . [0] ? .url;
+
+                            const embed = new EmbedBuilder()
+                                .setColor('#E1306C')
+                                .setDescription(latestPost.caption ? .text || "No caption")
+                                .setImage(imageUrl)
+                                .setTimestamp();
+
+                            await channel.send({
+                                content: `Halo Warga Infantry! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee cihuy\n\n🔗 ${postUrl}`,
+                                embeds: [embed]
+                            });
                         }
                     }
                 }
             } catch (err) {
-                console.error('⚠️ Monitor Error:', err.message);
+                console.error('⚠️ IG Monitor Error:', err.message);
             }
-        }, 600000); // Cek setiap 10 menit
+        }, 600000); // 10 menit sekali
     }
 };
