@@ -11,7 +11,7 @@ let lastPostShortcode = '';
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('test-ig')
-        .setDescription('Cek postingan terakhir @infantryvokasi via instagram120'),
+        .setDescription('Cek postingan terakhir @infantryvokasi via instagram120 (Official Method)'),
 
     async execute(interaction) {
         await interaction.deferReply({
@@ -20,79 +20,78 @@ module.exports = {
 
         try {
             const options = {
-                method: 'GET',
-                url: 'https://instagram120.p.rapidapi.com/user/posts',
-                params: {
-                    username: IG_USERNAME
-                },
+                method: 'POST', // Menggunakan POST sesuai snippet
+                url: 'https://instagram120.p.rapidapi.com/api/instagram/posts',
                 headers: {
                     'x-rapidapi-key': process.env.RAPIDAPI_KEY,
-                    'x-rapidapi-host': 'instagram120.p.rapidapi.com'
+                    'x-rapidapi-host': 'instagram120.p.rapidapi.com',
+                    'Content-Type': 'application/json'
+                },
+                data: {
+                    username: IG_USERNAME,
+                    maxId: ''
                 }
             };
 
             const response = await axios.request(options);
-            // Struktur instagram120 biasanya mengembalikan array langsung atau di dalam objek 'edges'
-            const posts = response.data.edges || response.data;
+
+            // Berdasarkan dokumentasi, data postingan biasanya ada di response.data.items atau response.data.data
+            const posts = response.data.items || response.data.data || response.data;
 
             if (posts && posts.length > 0) {
-                const latestPost = posts[0].node || posts[0];
+                const latestPost = posts[0];
 
-                // Cara aman tanpa operator ?. untuk menghindari auto-space error
+                // Mengambil caption secara aman
                 let caption = "Update baru!";
-                if (latestPost.edge_media_to_caption &&
-                    latestPost.edge_media_to_caption.edges &&
-                    latestPost.edge_media_to_caption.edges.length > 0) {
-                    caption = latestPost.edge_media_to_caption.edges[0].node.text;
+                if (latestPost.caption && latestPost.caption.text) {
+                    caption = latestPost.caption.text;
                 }
 
-                const shortcode = latestPost.shortcode || latestPost.code;
+                // Link menggunakan 'code' atau 'shortcode'
+                const shortcode = latestPost.code || latestPost.shortcode;
                 const postUrl = `https://www.instagram.com/p/${shortcode}/`;
 
                 await interaction.channel.send(`${caption} - @${IG_USERNAME}\n🔗 ${postUrl}`);
-                await interaction.editReply('✅ Berhasil mengambil data dari RapidAPI instagram120!');
+                await interaction.editReply('✅ Berhasil menarik data terbaru via Official Method!');
             } else {
                 await interaction.editReply('❌ Tidak ada postingan ditemukan.');
             }
         } catch (error) {
             console.error('RapidAPI Error:', error.message);
-            await interaction.editReply(`❌ Gagal: ${error.message}`);
+            await interaction.editReply(`❌ Gagal: ${error.response?.data?.message || error.message}`);
         }
     },
 
     init: (client) => {
-        console.log(`📸 Monitor Instagram via RapidAPI (instagram120) aktif...`);
+        console.log(`📸 Monitor Instagram (@${IG_USERNAME}) via instagram120 aktif...`);
         setInterval(async () => {
             try {
                 const options = {
-                    method: 'GET',
-                    url: 'https://instagram120.p.rapidapi.com/user/posts',
-                    params: {
-                        username: IG_USERNAME
-                    },
+                    method: 'POST',
+                    url: 'https://instagram120.p.rapidapi.com/api/instagram/posts',
                     headers: {
                         'x-rapidapi-key': process.env.RAPIDAPI_KEY,
-                        'x-rapidapi-host': 'instagram120.p.rapidapi.com'
+                        'x-rapidapi-host': 'instagram120.p.rapidapi.com',
+                        'Content-Type': 'application/json'
+                    },
+                    data: {
+                        username: IG_USERNAME,
+                        maxId: ''
                     }
                 };
 
                 const response = await axios.request(options);
-                const posts = response.data.edges || response.data;
+                const posts = response.data.items || response.data.data || response.data;
 
                 if (posts && posts.length > 0) {
-                    const latestPost = posts[0].node || posts[0];
-                    const shortcode = latestPost.shortcode || latestPost.code;
+                    const latestPost = posts[0];
+                    const shortcode = latestPost.code || latestPost.shortcode;
 
                     if (shortcode && shortcode !== lastPostShortcode) {
                         lastPostShortcode = shortcode;
                         const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
                         if (channel) {
-                            let caption = "Update baru!";
-                            if (latestPost.edge_media_to_caption &&
-                                latestPost.edge_media_to_caption.edges &&
-                                latestPost.edge_media_to_caption.edges.length > 0) {
-                                caption = latestPost.edge_media_to_caption.edges[0].node.text;
-                            }
+                            const caption = latestPost.caption && latestPost.caption.text ? latestPost.caption.text : "Update baru!";
                             await channel.send(`${caption} - @${IG_USERNAME}\n🔗 https://www.instagram.com/p/${shortcode}/`);
                         }
                     }
