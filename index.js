@@ -46,7 +46,7 @@ client.once(Events.ClientReady, async c => {
     }
 
     const IG_USERNAME = 'infantryvokasi';
-    const DISCORD_CHANNEL_ID = 'ID_CHANNEL_NOTIFIKASI_ANDA';
+    const DISCORD_CHANNEL_ID = '1449389549842202778';
 
     setInterval(async () => {
         try {
