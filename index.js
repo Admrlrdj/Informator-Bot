@@ -25,21 +25,27 @@ for (const file of commandFiles) {
     }
 }
 
-client.once(Events.ClientReady, async c => {
-    console.log(`✅ Bot login sebagai ${c.user.tag}`);
+client.on(Events.InteractionCreate, async interaction => {
+    if (!interaction.isChatInputCommand()) return;
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
 
-    const igNotifier = require('./commands/instagram.js');
-    igNotifier.init(client);
-
-    const ownerId = process.env.OWNER_ID;
     try {
-        const user = await client.users.fetch(ownerId);
-        const waktu = new Date().toLocaleString('id-ID', {
-            timeZone: 'Asia/Jakarta'
-        });
-        await user.send(`✅ Bot *${c.user.tag}* berhasil aktif pada ${waktu}.`);
-    } catch (err) {
-        console.error('❌ Gagal kirim DM ke owner');
+        await command.execute(interaction);
+    } catch (error) {
+        console.error(`⚠️ Gagal menjalankan command ${interaction.commandName}:`, error);
+
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({
+                content: '❌ Terjadi kesalahan saat menjalankan perintah ini.',
+                ephemeral: true
+            });
+        } else {
+            await interaction.reply({
+                content: '❌ Terjadi kesalahan saat menjalankan perintah ini.',
+                ephemeral: true
+            });
+        }
     }
 });
 
