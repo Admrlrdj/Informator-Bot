@@ -3,8 +3,8 @@ const axios = require('axios');
 
 const IG_USERNAME = 'infantryvokasi';
 const DISCORD_CHANNEL_ID = '1449389549842202778';
-const ROLE_ID = 'MASUKKAN_ID_ROLE_DISINI';
-let lastPostShortcode = ''; 
+const ROLE_ID = 'a';
+let lastPostShortcode = '1449385749303656560';
 
 module.exports = {
     data: new SlashCommandBuilder()
