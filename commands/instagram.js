@@ -2,19 +2,16 @@ const {
     SlashCommandBuilder,
     MessageFlags
 } = require('discord.js');
-const {
-    InstagramScraper
-} = require('@aduptive/instagram-scraper');
+const axios = require('axios');
 
-const scraper = new InstagramScraper();
-let lastPostShortcode = '';
 const IG_USERNAME = 'infantryvokasi';
 const DISCORD_CHANNEL_ID = '1449389549842202778';
+let lastPostShortcode = '';
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('test-ig')
-        .setDescription('Cek postingan terakhir @infantryvokasi secara instan'),
+        .setDescription('Cek postingan terakhir @infantryvokasi via instagram120'),
 
     async execute(interaction) {
         await interaction.deferReply({
@@ -22,51 +19,87 @@ module.exports = {
         });
 
         try {
-            // Mengambil 1 postingan terakhir
-            const results = await scraper.getPosts(IG_USERNAME, 1);
+            const options = {
+                method: 'GET',
+                url: 'https://instagram120.p.rapidapi.com/user/posts',
+                params: {
+                    username: IG_USERNAME
+                },
+                headers: {
+                    'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+                    'x-rapidapi-host': 'instagram120.p.rapidapi.com'
+                }
+            };
 
-            if (results.success && results.posts.length > 0) {
-                const latestPost = results.posts[0];
-                const caption = latestPost.caption || "Update baru!";
-                // URL Instagram menggunakan shortcode
-                const postUrl = `https://www.instagram.com/p/${latestPost.shortCode}/`;
+            const response = await axios.request(options);
+            // Struktur instagram120 biasanya mengembalikan array langsung atau di dalam objek 'edges'
+            const posts = response.data.edges || response.data;
+
+            if (posts && posts.length > 0) {
+                const latestPost = posts[0].node || posts[0];
+
+                // Cara aman tanpa operator ?. untuk menghindari auto-space error
+                let caption = "Update baru!";
+                if (latestPost.edge_media_to_caption &&
+                    latestPost.edge_media_to_caption.edges &&
+                    latestPost.edge_media_to_caption.edges.length > 0) {
+                    caption = latestPost.edge_media_to_caption.edges[0].node.text;
+                }
+
+                const shortcode = latestPost.shortcode || latestPost.code;
+                const postUrl = `https://www.instagram.com/p/${shortcode}/`;
 
                 await interaction.channel.send(`${caption} - @${IG_USERNAME}\n🔗 ${postUrl}`);
-                await interaction.editReply('✅ Notif test berhasil dikirim!');
+                await interaction.editReply('✅ Berhasil mengambil data dari RapidAPI instagram120!');
             } else {
-                await interaction.editReply(`❌ Gagal: ${results.error || 'Tidak ada postingan ditemukan.'}`);
+                await interaction.editReply('❌ Tidak ada postingan ditemukan.');
             }
-        } catch (err) {
-            console.error('Test IG Error:', err.message);
-            await interaction.editReply(`❌ Terjadi kesalahan: ${err.message}`);
+        } catch (error) {
+            console.error('RapidAPI Error:', error.message);
+            await interaction.editReply(`❌ Gagal: ${error.message}`);
         }
     },
 
     init: (client) => {
-        console.log(`📸 Monitor Instagram (@${IG_USERNAME}) menggunakan @aduptive/instagram-scraper aktif...`);
-
+        console.log(`📸 Monitor Instagram via RapidAPI (instagram120) aktif...`);
         setInterval(async () => {
             try {
-                const results = await scraper.getPosts(IG_USERNAME, 1);
+                const options = {
+                    method: 'GET',
+                    url: 'https://instagram120.p.rapidapi.com/user/posts',
+                    params: {
+                        username: IG_USERNAME
+                    },
+                    headers: {
+                        'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+                        'x-rapidapi-host': 'instagram120.p.rapidapi.com'
+                    }
+                };
 
-                if (!results.success || results.posts.length === 0) return;
+                const response = await axios.request(options);
+                const posts = response.data.edges || response.data;
 
-                const latestPost = results.posts[0];
+                if (posts && posts.length > 0) {
+                    const latestPost = posts[0].node || posts[0];
+                    const shortcode = latestPost.shortcode || latestPost.code;
 
-                // Cek apakah postingan ini baru berdasarkan shortCode
-                if (latestPost.shortCode !== lastPostShortcode) {
-                    lastPostShortcode = latestPost.shortCode;
-
-                    const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
-                    if (channel) {
-                        const caption = latestPost.caption || "Update baru!";
-                        const postUrl = `https://www.instagram.com/p/${latestPost.shortCode}/`;
-                        await channel.send(`${caption} - @${IG_USERNAME}\n🔗 ${postUrl}`);
+                    if (shortcode && shortcode !== lastPostShortcode) {
+                        lastPostShortcode = shortcode;
+                        const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
+                        if (channel) {
+                            let caption = "Update baru!";
+                            if (latestPost.edge_media_to_caption &&
+                                latestPost.edge_media_to_caption.edges &&
+                                latestPost.edge_media_to_caption.edges.length > 0) {
+                                caption = latestPost.edge_media_to_caption.edges[0].node.text;
+                            }
+                            await channel.send(`${caption} - @${IG_USERNAME}\n🔗 https://www.instagram.com/p/${shortcode}/`);
+                        }
                     }
                 }
             } catch (err) {
-                console.error('⚠️ IG Monitor Error:', err.message);
+                console.error('⚠️ Monitor Error:', err.message);
             }
-        }, 300000); // Cek setiap 5 menit
+        }, 600000); // Cek setiap 10 menit
     }
 };
