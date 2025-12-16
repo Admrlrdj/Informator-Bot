@@ -53,7 +53,7 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 });
 
-const wordSensor = require('./word-sensor.js');
+const wordSensor = require('./commands/word-sensor.js');
 client.on(wordSensor.name, (...args) => wordSensor.execute(...args));
 
 client.once(Events.ClientReady, async c => {
