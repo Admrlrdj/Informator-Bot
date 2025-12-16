@@ -27,6 +27,6 @@ module.exports = {
             } catch (err) {
                 console.error('⚠️ IG Monitor Error:', err.message);
             }
-        }, 60000);
+        }, 300000); // Cek setiap 5 menit
     }
 };
