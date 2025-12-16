@@ -5,9 +5,7 @@ const {
 const toxicWords = [
     'anjing', 'babi', 'tolol', 'goblok', 'kontol',
     'memek', 'ajg', 'pantek', 'bangsat', 'bajingan',
-    'brengsek', 'tai', 'jancok', 'kampret', 'ancok',
-    'bego', 'bajingan', 'bacot', 'brengsek', 'ajg',
-    'pepek', 'kntl', 'puqi', 'puki', 'pukimak'];
+    'brengsek', 'tai', 'jancok', 'kampret','ancok', 'bego', 'bajingan', 'bacot', 'brengsek'];
 
 module.exports = {
     name: Events.MessageCreate,
