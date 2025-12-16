@@ -53,9 +53,32 @@ client.on(Events.InteractionCreate, async interaction => {
 client.once(Events.ClientReady, async c => {
     console.log(`✅ Bot login sebagai ${c.user.tag}`);
 
+    // Inisialisasi IG Notifier
     const igNotifier = require('./commands/instagram.js');
     if (igNotifier && typeof igNotifier.init === 'function') {
         igNotifier.init(client);
+    }
+
+    // Ambil data waktu aktif untuk DM Owner
+    const ownerId = process.env.OWNER_ID;
+    const readyAt = c.readyAt;
+
+    const waktuDM = readyAt.toLocaleString('id-ID', {
+        timeZone: 'Asia/Jakarta',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+
+    try {
+        const user = await client.users.fetch(ownerId);
+        // Pesan yang Anda inginkan
+        await user.send(`✅ Bot **${c.user.tag}** berhasil aktif pada ${waktuDM}.`);
+    } catch (err) {
+        console.error('❌ Gagal kirim DM ke owner');
     }
 });
 
