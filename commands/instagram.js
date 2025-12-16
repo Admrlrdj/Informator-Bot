@@ -5,7 +5,7 @@ const {
 const ig = require('instagram-scraping');
 
 let lastPostShortcode = '';
-const IG_USERNAME = 'infantryvokasi';
+const IG_USERNAME = 'infantryvokasi'; // ig
 const DISCORD_CHANNEL_ID = '1449389549842202778';
 
 module.exports = {
