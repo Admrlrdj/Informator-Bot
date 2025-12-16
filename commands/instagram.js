@@ -1,7 +1,7 @@
 const {
     SlashCommandBuilder,
     MessageFlags
-} = require('discord.js'); // Tambahkan MessageFlags
+} = require('discord.js');
 const ig = require('instagram-scraping');
 
 let lastPostShortcode = '';
@@ -14,7 +14,6 @@ module.exports = {
         .setDescription('Cek postingan terakhir @infantryvokasi secara instan'),
 
     async execute(interaction) {
-        // Gunakan flags untuk mengganti ephemeral: true agar warning hilang
         await interaction.deferReply({
             flags: [MessageFlags.Ephemeral]
         });
@@ -27,14 +26,12 @@ module.exports = {
                 const caption = latestPost.text || "Update baru!";
                 await interaction.channel.send(`${caption} -${IG_USERNAME}\n🔗 https://www.instagram.com/p/${latestPost.shortcode}/`);
 
-                // Gunakan editReply karena sudah melakukan deferReply
                 await interaction.editReply('✅ Notif test berhasil dikirim!');
             } else {
                 await interaction.editReply('❌ Tidak ada postingan ditemukan.');
             }
         } catch (err) {
             console.error('Test IG Error:', err.message);
-            // Cek jika interaksi masih bisa dibalas
             if (interaction.deferred) {
                 await interaction.editReply(`❌ Gagal: ${err.message}`);
             }

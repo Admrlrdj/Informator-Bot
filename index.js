@@ -27,6 +27,7 @@ for (const file of commandFiles) {
 
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
+
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
 
@@ -49,18 +50,12 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 });
 
-client.on(Events.InteractionCreate, async interaction => {
-    if (!interaction.isChatInputCommand()) return;
-    const command = client.commands.get(interaction.commandName);
-    if (!command) return;
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-        await interaction.reply({
-            content: '❌ Error saat menjalankan command.',
-            ephemeral: true
-        });
+client.once(Events.ClientReady, async c => {
+    console.log(`✅ Bot login sebagai ${c.user.tag}`);
+
+    const igNotifier = require('./commands/instagram.js');
+    if (igNotifier && typeof igNotifier.init === 'function') {
+        igNotifier.init(client);
     }
 });
 
