@@ -27,6 +27,9 @@ module.exports = {
         const channelId = interaction.options.getString('channel_id');
         const message = interaction.options.getString('message');
 
+        // Mengambil username pengirim pesan
+        const sender = interaction.user.tag;
+
         try {
             const channel = await interaction.client.channels.fetch(channelId);
             if (!channel || !channel.isTextBased()) {
@@ -36,7 +39,9 @@ module.exports = {
                 });
             }
 
-            await channel.send(message);
+            // Mengirim pesan dengan format: [Pesan] - Dikirim oleh: [User Tag]
+            await channel.send(`${message}\n\n*- ${sender}*`);
+
             await interaction.reply({
                 content: `✅ Pesan berhasil dikirim ke <#${channelId}>`,
                 ephemeral: true

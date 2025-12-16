@@ -24,13 +24,13 @@ const SERVER_ID = process.env.SERVER_ID;
 
 (async () => {
     try {
-        console.log('🚀 Men-deploy command ke server IT Fest...');
+        console.log('🚀 Men-deploy command ke server Infantruy Vokasuy...');
         await rest.put(
             Routes.applicationGuildCommands(APPLICATION_ID, SERVER_ID), {
                 body: commands
             }
         );
-        console.log('✅ Command berhasil didaftarkan ke IT Fest!');
+        console.log('✅ Command berhasil didaftarkan ke Infantruy Vokasuy!');
     } catch (error) {
         console.error('❌ Error saat deploy:', error);
     }
