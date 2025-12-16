@@ -53,13 +53,11 @@ client.on(Events.InteractionCreate, async interaction => {
 client.once(Events.ClientReady, async c => {
     console.log(`✅ Bot login sebagai ${c.user.tag}`);
 
-    // Inisialisasi IG Notifier
     const igNotifier = require('./commands/instagram.js');
     if (igNotifier && typeof igNotifier.init === 'function') {
         igNotifier.init(client);
     }
 
-    // Ambil data waktu aktif untuk DM Owner
     const ownerId = process.env.OWNER_ID;
     const readyAt = c.readyAt;
 
@@ -75,7 +73,6 @@ client.once(Events.ClientReady, async c => {
 
     try {
         const user = await client.users.fetch(ownerId);
-        // Pesan yang Anda inginkan
         await user.send(`✅ Bot **${c.user.tag}** berhasil aktif pada ${waktuDM}.`);
     } catch (err) {
         console.error('❌ Gagal kirim DM ke owner');

@@ -1,10 +1,14 @@
-const { SlashCommandBuilder, MessageFlags, EmbedBuilder } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    MessageFlags,
+    EmbedBuilder
+} = require('discord.js');
 const axios = require('axios');
 
 const IG_USERNAME = 'infantryvokasi';
 const DISCORD_CHANNEL_ID = '1449389549842202778';
-const ROLE_ID = 'a';
-let lastPostShortcode = '1449385749303656560';
+const ROLE_ID = '1449385749303656560';
+let lastPostShortcode = '';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,7 +16,9 @@ module.exports = {
         .setDescription('Cek postingan terakhir @infantryvokasi secara manual'),
 
     async execute(interaction) {
-        await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+        await interaction.deferReply({
+            flags: [MessageFlags.Ephemeral]
+        });
 
         try {
             const options = {
@@ -23,12 +29,15 @@ module.exports = {
                     'x-rapidapi-host': 'instagram120.p.rapidapi.com',
                     'Content-Type': 'application/json'
                 },
-                data: { username: IG_USERNAME, maxId: '' }
+                data: {
+                    username: IG_USERNAME,
+                    maxId: ''
+                }
             };
 
             const response = await axios.request(options);
-            const posts = response.data.result?.edges || [];
-            
+            const posts = response.data.result && response.data.result.edges ? response.data.result.edges : [];
+
             if (posts.length > 0) {
                 const latestPost = posts[0].node;
                 const shortcode = latestPost.code;
@@ -36,30 +45,37 @@ module.exports = {
                 const imageUrl = latestPost.image_versions2?.candidates?.[0]?.url;
 
                 const targetChannel = await interaction.client.channels.fetch(DISCORD_CHANNEL_ID);
-                
+
                 if (targetChannel) {
                     const embed = new EmbedBuilder()
                         .setColor('#E1306C')
-                        .setDescription(latestPost.caption?.text || "No caption")
+                        .setDescription(latestPost.caption?.text || "Update baru!")
                         .setImage(imageUrl)
-                        .setTimestamp();
+                        .setTimestamp()
+                        .setFooter({
+                            text: `Instagram • @${IG_USERNAME}`
+                        });
 
                     await targetChannel.send({
                         content: `Halo <@&${ROLE_ID}>! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee cihuy\n\n🔗 ${postUrl}`,
                         embeds: [embed]
                     });
 
-                    await interaction.editReply(`✅ Berhasil! Tag dikirim ke <#${DISCORD_CHANNEL_ID}>`);
+                    await interaction.editReply(`✅ Berhasil! Notif dikirim ke <#${DISCORD_CHANNEL_ID}>`);
                 }
+            } else {
+                await interaction.editReply('❌ Gagal: Tidak ada postingan ditemukan.');
             }
         } catch (error) {
-            console.error('Error:', error.message);
+            console.error('RapidAPI Error:', error.message);
             await interaction.editReply(`❌ Gagal: ${error.message}`);
         }
     },
 
     init: (client) => {
-        const fetchCurrentState = async () => {
+        console.log(`📸 Monitor Instagram @${IG_USERNAME} aktif untuk Role: ${ROLE_ID}`);
+
+        const fetchInitialState = async () => {
             try {
                 const options = {
                     method: 'POST',
@@ -69,19 +85,23 @@ module.exports = {
                         'x-rapidapi-host': 'instagram120.p.rapidapi.com',
                         'Content-Type': 'application/json'
                     },
-                    data: { username: IG_USERNAME, maxId: '' }
+                    data: {
+                        username: IG_USERNAME,
+                        maxId: ''
+                    }
                 };
                 const response = await axios.request(options);
                 const posts = response.data.result?.edges || [];
                 if (posts.length > 0) {
                     lastPostShortcode = posts[0].node.code;
+                    console.log(`✅ Berhasil mencatat post terakhir (${lastPostShortcode}). Bot standby menunggu upload baru.`);
                 }
             } catch (err) {
-                console.error('⚠️ Init error:', err.message);
+                console.error('⚠️ Init IG Error:', err.message);
             }
         };
 
-        fetchCurrentState();
+        fetchInitialState();
 
         setInterval(async () => {
             try {
@@ -93,7 +113,10 @@ module.exports = {
                         'x-rapidapi-host': 'instagram120.p.rapidapi.com',
                         'Content-Type': 'application/json'
                     },
-                    data: { username: IG_USERNAME, maxId: '' }
+                    data: {
+                        username: IG_USERNAME,
+                        maxId: ''
+                    }
                 };
 
                 const response = await axios.request(options);
@@ -103,9 +126,9 @@ module.exports = {
                     const latestPost = posts[0].node;
                     const shortcode = latestPost.code;
 
-                    if (shortcode !== lastPostShortcode && lastPostShortcode !== '') {
+                    if (shortcode && shortcode !== lastPostShortcode && lastPostShortcode !== '') {
                         lastPostShortcode = shortcode;
-                        
+
                         const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
                         if (channel) {
                             const postUrl = `https://www.instagram.com/p/${shortcode}/`;
@@ -113,21 +136,24 @@ module.exports = {
 
                             const embed = new EmbedBuilder()
                                 .setColor('#E1306C')
-                                .setDescription(latestPost.caption?.text || "No caption")
+                                .setDescription(latestPost.caption?.text || "Update baru!")
                                 .setImage(imageUrl)
-                                .setTimestamp();
+                                .setTimestamp()
+                                .setFooter({
+                                    text: `Instagram • @${IG_USERNAME}`
+                                });
 
                             await channel.send({
-                                // MENTION ROLE DISINI JUGA
                                 content: `Halo <@&${ROLE_ID}>! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee cihuy\n\n🔗 ${postUrl}`,
                                 embeds: [embed]
                             });
+                            console.log(`🆕 Notif terkirim untuk postingan: ${shortcode}`);
                         }
                     }
                 }
             } catch (err) {
-                console.error('⚠️ IG Monitor Error:', err.message);
+                console.error('⚠️ Monitor IG Error:', err.message);
             }
-        }, 60000); 
+        }, 60000); // Cek setiap 60 detik
     }
 };
