@@ -35,27 +35,27 @@ for (const file of commandFiles) {
     }
 }
 
-const eventsPath = path.join(__dirname, 'events')
-if (fs.existsSync(eventsPath)) {
-    const eventFiles = fs.readdirSync(eventsPath).filter((file) => file.endsWith('.js'))
+// const eventsPath = path.join(__dirname, 'events')
+// if (fs.existsSync(eventsPath)) {
+//     const eventFiles = fs.readdirSync(eventsPath).filter((file) => file.endsWith('.js'))
 
-    for (const file of eventFiles) {
-        const filePath = path.join(eventsPath, file)
-        const mod = await import(pathToFileURL(filePath).href)
-        const event = mod?.default ?? mod
+//     for (const file of eventFiles) {
+//         const filePath = path.join(eventsPath, file)
+//         const mod = await import(pathToFileURL(filePath).href)
+//         const event = mod?.default ?? mod
 
-        if (!event?.name || typeof event.execute !== 'function') {
-            console.warn(`[WARN] Invalid event module: ${file}`)
-            continue
-        }
+//         if (!event?.name || typeof event.execute !== 'function') {
+//             console.warn(`[WARN] Invalid event module: ${file}`)
+//             continue
+//         }
 
-        if (event.once) {
-            client.once(event.name, (...args) => event.execute(...args))
-        } else {
-            client.on(event.name, (...args) => event.execute(...args))
-        }
-    }
-}
+//         if (event.once) {
+//             client.once(event.name, (...args) => event.execute(...args))
+//         } else {
+//             client.on(event.name, (...args) => event.execute(...args))
+//         }
+//     }
+// }
 
 client.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isChatInputCommand()) return
@@ -117,4 +117,4 @@ client.once(Events.ClientReady, async (c) => {
     }
 })
 
-client.login(process.env.TOKEN)
+client.login(process.env.DISCORD_BOT_TOKEN)

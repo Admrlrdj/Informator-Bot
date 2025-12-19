@@ -1,5 +1,5 @@
 import { Events } from 'discord.js'
-import censoredWords from '../config/censored-words.js'
+import censoredWords from '../dataset/toxic-words.json' with { type: 'json' }
 
 export default {
     name: Events.MessageCreate,

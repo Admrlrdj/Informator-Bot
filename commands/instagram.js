@@ -24,7 +24,7 @@ export default {
                 method: 'POST',
                 url: 'https://instagram120.p.rapidapi.com/api/instagram/posts',
                 headers: {
-                    'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+                    'x-rapidapi-key': process.env.RAPID_API_KEY,
                     'x-rapidapi-host': 'instagram120.p.rapidapi.com',
                     'Content-Type': 'application/json'
                 },
@@ -80,7 +80,7 @@ export default {
                     method: 'POST',
                     url: 'https://instagram120.p.rapidapi.com/api/instagram/posts',
                     headers: {
-                        'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+                        'x-rapidapi-key': process.env.RAPID_API_KEY,
                         'x-rapidapi-host': 'instagram120.p.rapidapi.com',
                         'Content-Type': 'application/json'
                     },
@@ -108,7 +108,7 @@ export default {
                     method: 'POST',
                     url: 'https://instagram120.p.rapidapi.com/api/instagram/posts',
                     headers: {
-                        'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+                        'x-rapidapi-key': process.env.RAPID_API_KEY,
                         'x-rapidapi-host': 'instagram120.p.rapidapi.com',
                         'Content-Type': 'application/json'
                     },
