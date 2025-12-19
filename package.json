@@ -12,7 +12,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "@aduptive/instagram-scraper": "^1.0.3",
     "axios": "^1.13.2",

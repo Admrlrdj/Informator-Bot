@@ -1,16 +1,15 @@
-const {
+import {
     SlashCommandBuilder,
     MessageFlags,
     EmbedBuilder
-} = require('discord.js');
-const axios = require('axios');
+} from 'discord.js'
+import axios from 'axios'
+const IG_USERNAME = 'infantryvokasi'
+const DISCORD_CHANNEL_ID = '1449389549842202778'
+const ROLE_ID = '1449385749303656560'
+let lastPostShortcode = ''
 
-const IG_USERNAME = 'infantryvokasi';
-const DISCORD_CHANNEL_ID = '1449389549842202778';
-const ROLE_ID = '1449385749303656560';
-let lastPostShortcode = '';
-
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName('test-ig')
         .setDescription('Cek postingan terakhir @infantryvokasi secara manual'),
@@ -18,7 +17,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply({
             flags: [MessageFlags.Ephemeral]
-        });
+        })
 
         try {
             const options = {
@@ -33,18 +32,18 @@ module.exports = {
                     username: IG_USERNAME,
                     maxId: ''
                 }
-            };
+            }
 
-            const response = await axios.request(options);
-            const posts = response.data.result && response.data.result.edges ? response.data.result.edges : [];
+            const response = await axios.request(options)
+            const posts = response.data.result && response.data.result.edges ? response.data.result.edges : []
 
             if (posts.length > 0) {
-                const latestPost = posts[0].node;
-                const shortcode = latestPost.code;
-                const postUrl = `https://www.instagram.com/p/${shortcode}/`;
-                const imageUrl = latestPost.image_versions2?.candidates?.[0]?.url;
+                const latestPost = posts[0].node
+                const shortcode = latestPost.code
+                const postUrl = `https://www.instagram.com/p/${shortcode}/`
+                const imageUrl = latestPost.image_versions2?.candidates?.[0]?.url
 
-                const targetChannel = await interaction.client.channels.fetch(DISCORD_CHANNEL_ID);
+                const targetChannel = await interaction.client.channels.fetch(DISCORD_CHANNEL_ID)
 
                 if (targetChannel) {
                     const embed = new EmbedBuilder()
@@ -54,26 +53,26 @@ module.exports = {
                         .setTimestamp()
                         .setFooter({
                             text: `Instagram • @${IG_USERNAME}`
-                        });
+                        })
 
                     await targetChannel.send({
                         content: `Halo <@&${ROLE_ID}>! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee cihuy\n\n🔗 ${postUrl}`,
                         embeds: [embed]
-                    });
+                    })
 
-                    await interaction.editReply(`✅ Berhasil! Notif dikirim ke <#${DISCORD_CHANNEL_ID}>`);
+                    await interaction.editReply(`✅ Berhasil! Notif dikirim ke <#${DISCORD_CHANNEL_ID}>`)
                 }
             } else {
-                await interaction.editReply('❌ Gagal: Tidak ada postingan ditemukan.');
+                await interaction.editReply('❌ Gagal: Tidak ada postingan ditemukan.')
             }
         } catch (error) {
-            console.error('RapidAPI Error:', error.message);
-            await interaction.editReply(`❌ Gagal: ${error.message}`);
+            console.error('RapidAPI Error:', error.message)
+            await interaction.editReply(`❌ Gagal: ${error.message}`)
         }
     },
 
     init: (client) => {
-        console.log(`📸 Monitor Instagram @${IG_USERNAME} aktif untuk Role: ${ROLE_ID}`);
+        console.log(`📸 Monitor Instagram @${IG_USERNAME} aktif untuk Role: ${ROLE_ID}`)
 
         const fetchInitialState = async () => {
             try {
@@ -89,19 +88,19 @@ module.exports = {
                         username: IG_USERNAME,
                         maxId: ''
                     }
-                };
-                const response = await axios.request(options);
-                const posts = response.data.result?.edges || [];
+                }
+                const response = await axios.request(options)
+                const posts = response.data.result?.edges || []
                 if (posts.length > 0) {
-                    lastPostShortcode = posts[0].node.code;
-                    console.log(`✅ Berhasil mencatat post terakhir (${lastPostShortcode}). Bot standby menunggu upload baru.`);
+                    lastPostShortcode = posts[0].node.code
+                    console.log(`✅ Berhasil mencatat post terakhir (${lastPostShortcode}). Bot standby menunggu upload baru.`)
                 }
             } catch (err) {
-                console.error('⚠️ Init IG Error:', err.message);
+                console.error('⚠️ Init IG Error:', err.message)
             }
-        };
+        }
 
-        fetchInitialState();
+        fetchInitialState()
 
         setInterval(async () => {
             try {
@@ -117,22 +116,22 @@ module.exports = {
                         username: IG_USERNAME,
                         maxId: ''
                     }
-                };
+                }
 
-                const response = await axios.request(options);
-                const posts = response.data.result?.edges || [];
+                const response = await axios.request(options)
+                const posts = response.data.result?.edges || []
 
                 if (posts.length > 0) {
-                    const latestPost = posts[0].node;
-                    const shortcode = latestPost.code;
+                    const latestPost = posts[0].node
+                    const shortcode = latestPost.code
 
                     if (shortcode && shortcode !== lastPostShortcode && lastPostShortcode !== '') {
-                        lastPostShortcode = shortcode;
+                        lastPostShortcode = shortcode
 
-                        const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
+                        const channel = await client.channels.fetch(DISCORD_CHANNEL_ID)
                         if (channel) {
-                            const postUrl = `https://www.instagram.com/p/${shortcode}/`;
-                            const imageUrl = latestPost.image_versions2?.candidates?.[0]?.url;
+                            const postUrl = `https://www.instagram.com/p/${shortcode}/`
+                            const imageUrl = latestPost.image_versions2?.candidates?.[0]?.url
 
                             const embed = new EmbedBuilder()
                                 .setColor('#E1306C')
@@ -141,19 +140,19 @@ module.exports = {
                                 .setTimestamp()
                                 .setFooter({
                                     text: `Instagram • @${IG_USERNAME}`
-                                });
+                                })
 
                             await channel.send({
                                 content: `Halo <@&${ROLE_ID}>! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee cihuy\n\n🔗 ${postUrl}`,
                                 embeds: [embed]
-                            });
-                            console.log(`🆕 Notif terkirim untuk postingan: ${shortcode}`);
+                            })
+                            console.log(`🆕 Notif terkirim untuk postingan: ${shortcode}`)
                         }
                     }
                 }
             } catch (err) {
-                console.error('⚠️ Monitor IG Error:', err.message);
+                console.error('⚠️ Monitor IG Error:', err.message)
             }
-        }, 60000); // Cek setiap 60 detik
+        }, 60000) // Cek setiap 60 detik
     }
-};
+}

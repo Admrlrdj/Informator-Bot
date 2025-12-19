@@ -1,5 +1,12 @@
 {
-  "ignore": [".git", "node_modules/**/node_modules"],
-  "watch": ["index.js", "commands/*.js", ".env"],
-  "ext": "js,json"
+    "ignore": [
+        ".git",
+        "node_modules/**/node_modules"
+    ],
+    "watch": [
+        "index.js",
+        "commands/*.js",
+        ".env"
+    ],
+    "ext": "js,json"
 }
