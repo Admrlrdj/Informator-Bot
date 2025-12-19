@@ -117,4 +117,4 @@ client.once(Events.ClientReady, async (c) => {
     }
 })
 
-client.login(process.env.DISCORD_BOT_TOKEN)
+client.login(process.env.TOKEN)
