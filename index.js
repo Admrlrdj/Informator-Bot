@@ -17,6 +17,7 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
     ],
 })
 
@@ -114,6 +115,22 @@ client.once(Events.ClientReady, async (c) => {
         }
     } catch (err) {
         console.error('❌ Gagal kirim DM ke owner')
+    }
+})
+
+client.on(Events.GuildMemberAdd, async (member) => {
+    const ROLE_ID = '1449385749303656560'
+
+    try {
+        const role = member.guild.roles.cache.get(ROLE_ID)
+        if (role) {
+            await member.roles.add(role)
+            console.log(`✅ Berhasil memberikan role ${role.name} kepada ${member.user.tag}`)
+        } else {
+            console.error('❌ Role tidak ditemukan. Pastikan ID Role benar.')
+        }
+    } catch (error) {
+        console.error(`❌ Gagal memberikan role kepada ${member.user.tag}:`, error)
     }
 })
 
