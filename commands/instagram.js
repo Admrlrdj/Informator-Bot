@@ -153,6 +153,6 @@ export default {
             } catch (err) {
                 console.error('⚠️ Monitor IG Error:', err.message)
             }
-        }, 60000) // Cek setiap 60 detik
+        }, 2700000) // Cek setiap 45 menit
     }
 }
