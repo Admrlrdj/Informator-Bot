@@ -2,11 +2,18 @@ import 'dotenv/config'
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import {
+    fileURLToPath,
+    pathToFileURL
+} from 'node:url'
 
-import { REST, Routes } from 'discord.js'
+import {
+    REST,
+    Routes
+} from 'discord.js'
 
-const __filename = fileURLToPath(import.meta.url)
+const __filename = fileURLToPath(
+    import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const commands = []
@@ -17,25 +24,33 @@ for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file)
 
     const mod = await import(pathToFileURL(filePath).href)
-    const command = mod?.default ?? mod
+    const command = mod ?.default ?? mod
 
     if (command && 'data' in command && 'execute' in command) {
         commands.push(command.data.toJSON())
     }
 }
 
-const rest = new REST().setToken(process.env.TOKEN)
-const APPLICATION_ID = process.env.APPLICATION_ID
-const SERVER_ID = process.env.SERVER_ID
+// Tambahkan titik koma (;) di akhir baris-baris ini agar aman
+const rest = new REST().setToken(process.env.TOKEN);
+const APPLICATION_ID = process.env.APPLICATION_ID;
+const SERVER_ID = process.env.SERVER_ID;
 
-    (async () => {
-        try {
-            console.log('🚀 Men-deploy command ke server Infantruy Vokasuy...')
-            await rest.put(Routes.applicationGuildCommands(APPLICATION_ID, SERVER_ID), {
-                body: commands,
-            })
-            console.log('✅ Command berhasil didaftarkan ke Infantruy Vokasuy!')
-        } catch (error) {
-            console.error('❌ Error saat deploy:', error)
+// IIFE (Immediately Invoked Function Expression)
+(async () => {
+    try {
+        console.log(`🚀 Men-deploy ${commands.length} command ke server...`)
+
+        // Pastikan variabel ENV tidak kosong
+        if (!APPLICATION_ID || !SERVER_ID) {
+            throw new Error('❌ APPLICATION_ID atau SERVER_ID tidak ditemukan di file .env')
         }
-    })()
+
+        await rest.put(Routes.applicationGuildCommands(APPLICATION_ID, SERVER_ID), {
+            body: commands,
+        })
+        console.log('✅ Command berhasil didaftarkan ke Infantruy Vokasuy!')
+    } catch (error) {
+        console.error('❌ Error saat deploy:', error)
+    }
+})();
