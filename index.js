@@ -72,23 +72,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 })
 
-// [UPDATE] Event listener untuk mereset timer atau respon idle
+// [UPDATE] Event listener: Tagging = Reset Timer (Silent) + Balas "kunaon?"
 client.on(Events.MessageCreate, async (message) => {
+    // Abaikan pesan dari bot
     if (message.author.bot) return
 
     // Cek apakah bot di-mention
     if (message.mentions.has(client.user)) {
         const guildId = message.guild.id
-        const connection = getVoiceConnection(guildId)
 
-        // Skenario 1: Bot sedang di voice channel (Reset Timer)
+        // --- LOGIKA RESET TIMER (Background Process) ---
+        // Kita jalankan ini diam-diam agar tidak nyepam chat
+        const connection = getVoiceConnection(guildId)
         if (connection) {
-            // Hapus timer lama jika ada
+            // Hapus timer lama
             if (client.voiceTimers.has(guildId)) {
                 clearTimeout(client.voiceTimers.get(guildId))
             }
 
-            // Set timer baru 10 menit
+            // Pasang timer baru 10 menit
             const timeout = setTimeout(() => {
                 connection.destroy()
                 client.voiceTimers.delete(guildId)
@@ -96,13 +98,13 @@ client.on(Events.MessageCreate, async (message) => {
 
             client.voiceTimers.set(guildId, timeout)
 
-            await message.reply('⏱️ Timer voice di-reset! Gw bakal stay 10 menit lagi dari sekarang.')
-            console.log(`⏱️ Timer reset untuk guild: ${guildId}`)
+            // Info hanya masuk ke console log server (user tidak lihat)
+            console.log(`⏱️ Timer voice di-reset via TAG oleh ${message.author.tag}`)
         }
-        // Skenario 2: Bot nganggur / tidak di voice channel
-        else {
-            await message.reply('kunaon?')
-        }
+        // -----------------------------------------------
+
+        // Balasan Bot ke User (Selalu "kunaon?")
+        await message.reply('kunaon?')
     }
 })
 
