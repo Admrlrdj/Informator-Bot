@@ -72,7 +72,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 })
 
-// [BARU] Event listener untuk mereset timer jika bot di-tag
+// [UPDATE] Event listener untuk mereset timer atau respon idle
 client.on(Events.MessageCreate, async (message) => {
     if (message.author.bot) return
 
@@ -81,7 +81,7 @@ client.on(Events.MessageCreate, async (message) => {
         const guildId = message.guild.id
         const connection = getVoiceConnection(guildId)
 
-        // Jika bot sedang di voice channel
+        // Skenario 1: Bot sedang di voice channel (Reset Timer)
         if (connection) {
             // Hapus timer lama jika ada
             if (client.voiceTimers.has(guildId)) {
@@ -98,6 +98,10 @@ client.on(Events.MessageCreate, async (message) => {
 
             await message.reply('⏱️ Timer voice di-reset! Gw bakal stay 10 menit lagi dari sekarang.')
             console.log(`⏱️ Timer reset untuk guild: ${guildId}`)
+        }
+        // Skenario 2: Bot nganggur / tidak di voice channel
+        else {
+            await message.reply('kunaon?')
         }
     }
 })
