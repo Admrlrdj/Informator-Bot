@@ -144,7 +144,9 @@ client.on(Events.MessageCreate, async (message) => {
     }
 
     // Tambahkan 10 XP (User tidak diberi tahu)
-    levelsData[userId].xp += 10
+    levelsData[userId].xp += 25
+
+    // Ambil XP dan Level saat ini untuk perhitungan
     const currentXP = levelsData[userId].xp
     const currentLevel = levelsData[userId].level
 
