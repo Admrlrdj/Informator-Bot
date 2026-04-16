@@ -101,12 +101,12 @@ client.on(Events.MessageCreate, async (message) => {
             client.voiceTimers.set(guildId, timeout)
 
             // Info hanya masuk ke console log server (user tidak lihat)
-            console.log(`⏱️ Timer voice di-reset via TAG oleh ${message.author.tag}`)
+            console.log(`⏱️ Timer voice berhasil direset`)
         }
         // -----------------------------------------------
 
-        // Balasan Bot ke User (Selalu "kunaon?")
-        await message.reply('kunaon?')
+        // Balasan Bot ke User (Selalu "naon?")
+        await message.reply('naon?')
     }
 
     // ==========================================

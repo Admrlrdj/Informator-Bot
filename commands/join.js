@@ -10,7 +10,7 @@ import {
 export default {
     data: new SlashCommandBuilder()
         .setName('join')
-        .setDescription('Masuk ke Voice Channel (Auto Mute/Deaf + Auto Leave 10m)'),
+        .setDescription('Masuk ke Voice Channel (Auto Mute & Deafen + Auto Leave 10m)'),
 
     async execute(interaction) {
         // Cek apakah user ada di voice channel
@@ -78,7 +78,7 @@ export default {
                 }
             })
 
-            await interaction.editReply(`✅ Berhasil join **<#${channel.id}>**.\n🔇 **Mute & Deafen: ON**\n⏱️ **Auto-leave:** 10 menit (Tag bot buat reset timer).`)
+            await interaction.editReply(`✅ Berhasil join **<#${channel.id}>**.\n⏱️ **Auto-leave:** 10 menit (Tag bot buat reset timer).`)
 
         } catch (error) {
             console.error(error)

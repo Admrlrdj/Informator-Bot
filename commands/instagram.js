@@ -57,7 +57,7 @@ export default {
                         })
 
                     await targetChannel.send({
-                        content: `Halo <@&${ROLE_ID}>! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee cihuy\n\n🔗 ${postUrl}`,
+                        content: `Halo <@&${ROLE_ID}>! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee\n\n🔗 ${postUrl}`,
                         embeds: [embed]
                     })
 
@@ -146,7 +146,7 @@ export default {
                                 })
 
                             await channel.send({
-                                content: `Halo <@&${ROLE_ID}>! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee cihuy\n\n🔗 ${postUrl}`,
+                                content: `Halo <@&${ROLE_ID}>! IG @${IG_USERNAME} barusan upload feed nih, gas di cek yeee\n\n🔗 ${postUrl}`,
                                 embeds: [embed]
                             })
                             console.log(`🆕 Notif terkirim untuk postingan: ${shortcode}`)
