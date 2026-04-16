@@ -40,6 +40,8 @@ client.commands = new Collection()
 // [BARU] Koleksi untuk menyimpan timer auto-leave setiap server
 client.voiceTimers = new Collection()
 
+// [BARU] Setup Collection untuk Cooldown XP per detik
+const xpCooldowns = new Collection()
 const commandsPath = path.join(__dirname, 'commands')
 const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith('.js'))
 
@@ -106,6 +108,64 @@ client.on(Events.MessageCreate, async (message) => {
         // Balasan Bot ke User (Selalu "kunaon?")
         await message.reply('kunaon?')
     }
+
+    // ==========================================
+    // 2. FITUR LEVELLING SYSTEM
+    // ==========================================
+    const userId = message.author.id
+    const now = Date.now()
+    const cooldownAmount = 1000 // Cooldown 1 detik (1000 ms)
+
+    // Cek apakah user mengirim pesan terlalu cepat (kurang dari 1 detik)
+    if (xpCooldowns.has(userId)) {
+        const expirationTime = xpCooldowns.get(userId) + cooldownAmount
+        if (now < expirationTime) {
+            return // Skip penambahan XP karena belum 1 detik
+        }
+    }
+
+    // Set cooldown baru untuk user
+    xpCooldowns.set(userId, now)
+
+    // Baca data level dari file JSON
+    let levelsData = {}
+    try {
+        levelsData = JSON.parse(fs.readFileSync(levelsDbPath, 'utf8'))
+    } catch (error) {
+        console.error('⚠️ Gagal membaca levels.json', error)
+    }
+
+    // Jika user belum ada di database, buat profil baru mulai dari Level 0 & 0 XP
+    if (!levelsData[userId]) {
+        levelsData[userId] = {
+            xp: 0,
+            level: 0
+        }
+    }
+
+    // Tambahkan 10 XP (User tidak diberi tahu)
+    levelsData[userId].xp += 10
+    const currentXP = levelsData[userId].xp
+    const currentLevel = levelsData[userId].level
+
+    // Hitung level baru (Rumusnya sangat gampang: Total XP dibagi 100)
+    // 100xp = Lvl 1 | 200xp = Lvl 2 | 500xp = Lvl 5
+    const newLevel = Math.floor(currentXP / 100)
+
+    // Cek apakah level barunya lebih tinggi dari level saat ini (Naik Level)
+    if (newLevel > currentLevel) {
+        levelsData[userId].level = newLevel
+
+        // Cuma kirim info kalau dia beneran naik level
+        await message.channel.send(`🎉 Selamat <@${userId}>! Lu baru aja naik ke **Level ${newLevel}**!`)
+    }
+
+    // Simpan kembali data ke dalam levels.json
+    try {
+        fs.writeFileSync(levelsDbPath, JSON.stringify(levelsData, null, 2))
+    } catch (error) {
+        console.error('⚠️ Gagal menyimpan levels.json', error)
+    }
 })
 
 /**
@@ -133,5 +193,12 @@ client.on(Events.GuildMemberAdd, async (member) => {
         console.error(`❌ Gagal memberikan role:`, error)
     }
 })
+
+// [BARU] Path untuk database level
+const levelsDbPath = path.join(__dirname, 'dataset', 'levels.json')
+// Buat file otomatis jika belum ada
+if (!fs.existsSync(levelsDbPath)) {
+    fs.writeFileSync(levelsDbPath, JSON.stringify({}))
+}
 
 client.login(process.env.TOKEN)
